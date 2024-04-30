@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 
-# Algoritmos Distribuidos
-# Componente Básico
-# (baseado em consumidor.py)
-# Prof. Luiz Lima Jr.
-
 from pika import BlockingConnection
 import sys
 
+firstTime = True
+
 # entrega a mensagem
-def recebendo(msg, canal):
+def recebendo(msg, origem, canal):
     print(f'mensagem recebida: "{msg}"')
+    global firstTime
+    if firstTime:
+        for vizinho in Nx:
+            envia(msg, vizinho, canal)
+            firstTime = False
+
 
 # envia msg a dest
 def envia(msg, dest, canal):
@@ -25,13 +28,19 @@ if len(sys.argv) < 2:
 idx = sys.argv[1]  # identificador do componente
 Nx = sys.argv[2:] # vizinhos
 
+print("idx = ", idx)
+print("Nx = ", Nx)
+
 conexao = BlockingConnection()
 canal = conexao.channel()
 
 canal.queue_declare(queue=idx, auto_delete=True)
+for vizinho in Nx:
+    canal.queue_declare(queue=vizinho, auto_delete=True)
 
 def callback(canal, metodo, props, corpo):
-    recebendo(corpo.decode(), canal)
+    msg = corpo.decode().split(":")
+    recebendo(msg[1], msg[0], canal)
 
 canal.basic_consume(queue=idx,
                     on_message_callback=callback,
