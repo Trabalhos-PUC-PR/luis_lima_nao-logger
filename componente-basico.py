@@ -10,9 +10,11 @@ def recebendo(msg, origem, canal):
     print(f'mensagem recebida: "{msg}"')
     global firstTime
     if firstTime:
+        destinos = Nx[:]
+        destinos.remove(origem)
         for vizinho in Nx:
-            envia(msg, vizinho, canal)
-            firstTime = False
+            envia(idx+":"+msg, vizinho, canal)
+        firstTime = False
 
 
 # envia msg a dest
@@ -27,6 +29,7 @@ if len(sys.argv) < 2:
 
 idx = sys.argv[1]  # identificador do componente
 Nx = sys.argv[2:] # vizinhos
+Nx.append("STARTER")
 
 print("idx = ", idx)
 print("Nx = ", Nx)
